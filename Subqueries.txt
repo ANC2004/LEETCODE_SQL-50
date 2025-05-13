@@ -1,0 +1,113 @@
+1)Employees Whose Manager Left the Company
+
+SELECT employee_id
+FROM Employees
+WHERE salary < 30000
+AND manager_id NOT IN (SELECT employee_id FROM Employees)
+ORDER BY employee_id;
+
+
+2)Exchange Seats
+
+SELECT
+  CASE
+    WHEN id = (SELECT MAX(id) FROM Seat) AND MOD(id, 2) = 1 THEN id
+    WHEN MOD(id, 2) = 1 THEN id + 1 ELSE id - 1
+  END AS id,student
+FROM Seat ORDER BY id;
+
+
+3)Movie Rating
+
+SELECT results
+FROM (
+  SELECT u.name AS results, COUNT(r.movie_id) AS total_rated
+  FROM Users u
+  LEFT JOIN MovieRating r ON u.user_id = r.user_id
+  GROUP BY u.user_id, u.name
+  ORDER BY total_rated DESC, u.name ASC
+)
+WHERE ROWNUM = 1
+
+UNION ALL
+
+
+SELECT results
+FROM (
+  SELECT m.title AS results, AVG(r.rating) AS avg_rating
+  FROM Movies m
+  JOIN MovieRating r ON m.movie_id = r.movie_id
+  WHERE r.created_at BETWEEN DATE '2020-02-01' AND DATE '2020-02-29'
+  GROUP BY m.movie_id, m.title
+  ORDER BY avg_rating DESC, m.title ASC
+)
+WHERE ROWNUM = 1;
+
+
+4)Restaurant Growth
+
+SELECT 
+    TO_CHAR(c.visited_on, 'YYYY-MM-DD') AS visited_on,
+    (
+        SELECT SUM(c2.amount)
+        FROM customer c2
+        WHERE c2.visited_on BETWEEN c.visited_on - INTERVAL '6' DAY AND c.visited_on
+    ) AS amount,
+    ROUND(
+        (
+            SELECT SUM(c2.amount)
+            FROM customer c2
+            WHERE c2.visited_on BETWEEN c.visited_on - INTERVAL '6' DAY AND c.visited_on
+        ) / 7, 2
+    ) AS average_amount
+FROM customer c
+WHERE c.visited_on >= (
+    SELECT MIN(visited_on) + INTERVAL '6' DAY FROM customer
+)
+GROUP BY c.visited_on;
+ORDER BY c.visited_on;
+
+
+5)Friend Requests II: Who Has the Most Friends
+
+SELECT *
+FROM (
+    SELECT id, COUNT(id) AS num
+    FROM (
+        SELECT requester_id AS id FROM RequestAccepted
+        UNION ALL
+        SELECT accepter_id AS id FROM RequestAccepted
+    ) temp
+    GROUP BY id
+    ORDER BY num DESC
+)
+WHERE ROWNUM = 1;
+
+
+6)Investments in 2016
+
+SELECT ROUND(SUM(tiv_2016), 2) AS tiv_2016
+FROM Insurance
+WHERE tiv_2015 IN (
+    SELECT tiv_2015
+    FROM Insurance
+    GROUP BY tiv_2015
+    HAVING COUNT(*) > 1
+)
+AND (lat, lon) IN (
+    SELECT lat, lon
+    FROM Insurance
+    GROUP BY lat, lon
+    HAVING COUNT(*) = 1
+);
+
+
+7)Department Top Three Salaries
+
+SELECT department, employee, salary FROM
+(SELECT d.name AS department, e.name AS employee, e.salary AS salary,
+DENSE_RANK() OVER (PARTITION BY d.name ORDER BY e.salary DESC) AS ranks
+FROM employee e LEFT JOIN department d ON e.departmentId = d.id
+) temp
+WHERE ranks <= 3;
+
