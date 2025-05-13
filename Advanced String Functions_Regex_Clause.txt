@@ -1,0 +1,65 @@
+1)Fix Names in a Table
+
+SELECT user_id,
+UPPER(SUBSTR(name, 1, 1)) || LOWER(SUBSTR(name, 2)) AS name
+FROM Users
+ORDER BY user_id;
+
+
+2)Patients With a Condition
+
+SELECT * FROM Patients
+WHERE
+  conditions LIKE 'DIAB1%'
+  OR conditions LIKE '% DIAB1%';
+
+
+3)Delete Duplicate Emails
+
+DELETE FROM Person
+WHERE id NOT IN (
+    SELECT MIN(id)
+    FROM Person
+    GROUP BY email
+);
+
+
+4)Second Highest Salary
+
+select max(salary) as SecondHighestSalary from Employee 
+where salary not in (select max(salary) from Employee)
+
+
+5)Group Sold Products By The Date
+
+SELECT 
+    TO_CHAR(sell_date, 'YYYY-MM-DD') AS sell_date,
+    COUNT(DISTINCT product) AS num_sold,
+    LISTAGG(product, ',') WITHIN GROUP (ORDER BY product) AS products
+FROM (
+    SELECT DISTINCT sell_date, product
+    FROM Activities
+)
+GROUP BY sell_date
+ORDER BY sell_date;
+
+
+6)List the Products Ordered in a Period
+
+SELECT 
+    p.product_name,
+    SUM(o.unit) AS unit
+FROM Products p LEFT JOIN Orders o ON p.product_id = o.product_id
+WHERE 
+    o.order_date >= TO_DATE('2020-02-01', 'YYYY-MM-DD')
+    AND o.order_date < TO_DATE('2020-03-01', 'YYYY-MM-DD')
+GROUP BY 
+    p.product_id, p.product_name
+HAVING 
+    SUM(o.unit) >= 100;
+
+
+7)Find Users With Valid E-Mails
+
+SELECT * FROM Users
+WHERE REGEXP_LIKE(mail, '^[A-Za-z][A-Za-z0-9._-]*@leetcode[.]com$');
