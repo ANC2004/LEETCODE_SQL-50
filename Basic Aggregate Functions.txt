@@ -1,0 +1,72 @@
+1)Not Boring Movies
+
+SELECT * FROM Cinema
+WHERE MOD(id, 2) = 1 
+AND description <> 'boring'  
+ORDER BY rating DESC;
+
+
+2)Average Selling Price
+
+select p.product_id, nvl(round(sum(p.price*u.units)/sum(u.units),2),0) as average_price 
+from Prices p left join UnitsSold u on p.product_id = u.product_id and u.purchase_date between p.start_date and p.end_date
+group by p.product_id
+
+
+3)Project Employees I
+
+SELECT p.project_id, 
+ROUND(AVG(e.experience_years), 2) AS average_years
+FROM Project p
+JOIN Employee e ON p.employee_id = e.employee_id
+GROUP BY p.project_id;
+
+
+4)Percentage of Users Attended a Contest
+
+select contest_id,
+round(count(distinct user_id)*100/ (select count(user_id) from Users),2) as percentage
+from Register group by contest_id 
+order by percentage desc,contest_id asc
+
+
+5)Queries Quality and Percentage
+
+SELECT query_name, 
+ROUND(AVG(rating / position), 2) AS quality,
+ROUND(AVG(CASE WHEN rating < 3 THEN 1 ELSE 0 END) * 100, 2) AS poor_query_percentage
+FROM Queries
+WHERE query_name IS NOT NULL
+GROUP BY query_name;
+
+
+6)Monthly Transactions I
+
+SELECT TO_CHAR(trans_date, 'YYYY-MM') AS month,country,COUNT(id) AS trans_count,
+SUM(CASE WHEN state = 'approved' THEN 1 ELSE 0 END) AS approved_count,
+SUM(amount) AS trans_total_amount,
+SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) AS approved_total_amount
+FROM Transactions
+GROUP BY TO_CHAR(trans_date, 'YYYY-MM'), country;
+
+
+7)Immediate Food Delivery II
+
+SELECT 
+ROUND(SUM(CASE WHEN min_order = min_pref_date THEN 1 ELSE 0 END) * 100 / COUNT(min_order), 2) AS immediate_percentage
+FROM (
+    SELECT customer_id,MIN(order_date) AS min_order,
+    MIN(customer_pref_delivery_date) AS min_pref_date
+    FROM delivery
+    GROUP BY customer_id
+) t;
+
+
+8)Game Play Analysis IV
+
+SELECT ROUND(SUM(player_login) / COUNT(DISTINCT player_id), 2) AS fraction
+FROM (SELECT player_id, 
+CASE WHEN event_date - MIN(event_date) OVER (PARTITION BY player_id) = 1 THEN 1 ELSE 0 END AS player_login
+FROM activity
+);
+
