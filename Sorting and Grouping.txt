@@ -1,0 +1,49 @@
+1)Number of Unique Subjects Taught by Each Teacher
+
+SELECT teacher_id,COUNT(DISTINCT subject_id) AS cnt
+FROM Teacher
+GROUP BY teacher_id;
+
+
+2)User Activity for the Past 30 Days I
+
+SELECT TO_CHAR(TRUNC(activity_date), 'YYYY-MM-DD') AS day, COUNT(DISTINCT user_id) AS active_users
+FROM Activity
+WHERE activity_date >= TO_DATE('2019-07-27', 'YYYY-MM-DD') - 29 AND activity_date <= TO_DATE('2019-07-27', 'YYYY-MM-DD')
+GROUP BY TRUNC(activity_date);
+
+
+3)Product Sales Analysis III
+
+SELECT product_id,year AS first_year,quantity,price
+FROM Sales
+WHERE (product_id, year) IN (SELECT product_id, MIN(year) FROM Sales GROUP BY product_id);
+
+
+4)Classes More Than 5 Students
+
+select class from Courses 
+group by class 
+having count(student)>=5;
+
+
+5)Find Followers Count
+
+select user_id, count(follower_id) as followers_count 
+from Followers 
+group by user_id 
+order by user_id; 
+
+
+6)Biggest Single Number
+
+SELECT MAX(num) AS num
+FROM (SELECT num FROM MyNumbers GROUP BY num HAVING COUNT(num) = 1) new_table;
+
+
+7)Customers Who Bought All Products
+
+SELECT customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM Product);
